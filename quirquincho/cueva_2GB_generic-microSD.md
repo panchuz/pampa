@@ -1,9 +1,61 @@
 
-sudo mkfs.f2fs -f -l cueva -O extra_attr,inode_checksum,sb_checksum,compression /dev/mmcblk0
+### Referencia:
+```
+https://wiki.archlinux.org/title/F2FS
+```
 
+### excepciones a la compresión
+```
 chattr -R +m /mnt/cueva/dump
 chattr -R +m /mnt/cueva/template
+```
 
+#### root@quirquincho:~# lsattr -R /mnt/cueva
+```
+------------------N--- /mnt/cueva/cueva_creacion.txt
+------------------N--- /mnt/cueva/UUID.txt
+-----------I------N--m /mnt/cueva/template
+
+/mnt/cueva/template:
+-----------I------N--m /mnt/cueva/template/iso
+
+/mnt/cueva/template/iso:
+
+-----------I------N--m /mnt/cueva/template/cache
+
+/mnt/cueva/template/cache:
+---------------------m /mnt/cueva/template/cache/debian-12-standard_12.2-1_amd64.tar.zst
+
+
+-----------I------N--m /mnt/cueva/dump
+
+/mnt/cueva/dump:
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_04_14-13_55_24.tar.zst.notes
+---------------------m /mnt/cueva/dump/vzdump-lxc-200-2023_04_14-13_55_24.tar.zst
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_04_14-13_55_24.tar.zst.protected
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_04_14-13_55_24.log
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_06_14-20_51_14.tar.zst.notes
+---------------------m /mnt/cueva/dump/vzdump-lxc-200-2023_06_14-20_51_14.tar.zst
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_06_14-20_51_14.tar.zst.protected
+------------------N--m /mnt/cueva/dump/vzdump-lxc-200-2023_06_14-20_51_14.log
+
+-----------I------N--- /mnt/cueva/images
+
+/mnt/cueva/images:
+-----------I------N--- /mnt/cueva/images/104
+
+/mnt/cueva/images/104:
+---------------------- /mnt/cueva/images/104/vm-104-disk-0.raw
+
+
+-----------I------N--- /mnt/cueva/private
+
+/mnt/cueva/private:
+
+-----------I------N--- /mnt/cueva/snippets
+
+/mnt/cueva/snippets:
+```
 
 ### root@quirquincho:~# cat /etc/fstab
 ```
@@ -13,7 +65,13 @@ chattr -R +m /mnt/cueva/template
 UUID=4ee5f354-3cad-4fdf-8da3-842b457aa64e /mnt/cueva f2fs noatime,lazytime,noacl,atgc,gc_merge,compress_algorithm=zstd:6,compress_chksum,compress_extension=log 0 2
 ```
 
-### creación
+### root@quirquincho:~# mount |grep cueva
+```
+/dev/sdb on /mnt/cueva type f2fs (rw,noatime,lazytime,background_gc=on,gc_merge,nodiscard,no_heap,user_xattr,inline_xattr,noacl,inline_data,inline_dentry,flush_merge,barrier,extent_cache,mode=adaptive,active_logs=6,alloc_mode=reuse,checkpoint_merge,fsync_mode=posix,compress_algorithm=zstd:6,compress_log_size=2,compress_extension=log,compress_chksum,compress_mode=fs,atgc,discard_unit=block,memory=normal)
+```
+
+
+### mkfs.f2fs -f -l cueva -O extra_attr,inode_checksum,sb_checksum,compression /dev/mmcblk0
 ````
 user@debian:~$ sudo mkfs.f2fs -f -l cueva -O extra_attr,inode_checksum,sb_checksum,compression /dev/mmcblk0
 
