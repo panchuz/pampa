@@ -1,8 +1,5 @@
 
-### Referencia:
-```
-https://wiki.archlinux.org/title/F2FS
-```
+### Ref: https://wiki.archlinux.org/title/F2FS
 
 ### excepciones a la compresión
 ```
