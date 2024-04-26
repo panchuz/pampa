@@ -1,6 +1,73 @@
 
-### Ref: https://wiki.archlinux.org/title/Btrfs
+### Creación y propiedades extendidas
+Ref:
+https://wiki.archlinux.org/title/Btrfs,
+https://btrfs.readthedocs.io/en/latest/btrfs-property.html
 
+```
+btrfs subvolume create /mnt/pozo/{@pozo-discos @pozo-baul @playables @downloads @temp @logs}
+
+root@quirquincho:~# btrfs property set /mnt/pozo/@pozo-discos compression zstd
+root@quirquincho:~# btrfs prop get /mnt/pozo/@pozo-discos
+ro=false
+compression=zstd
+root@quirquincho:~# btrfs prop get /mnt/pozo/@pozo-baul
+ro=false
+
+root@quirquincho:~# chattr +C /mnt/pozo/@temp
+root@quirquincho:~# chattr +C /mnt/pozo/@logs
+root@quirquincho:~# lsattr -R /mnt/pozo
+--------c------------- /mnt/pozo/@pozo-discos
+
+/mnt/pozo/@pozo-discos:
+
+---------------------- /mnt/pozo/@pozo-baul
+
+/mnt/pozo/@pozo-baul:
+
+---------------------- /mnt/pozo/@downloads
+
+/mnt/pozo/@downloads:
+
+---------------------- /mnt/pozo/@playables
+
+/mnt/pozo/@playables:
+
+---------------C------ /mnt/pozo/@temp
+
+/mnt/pozo/@temp:
+
+---------------C------ /mnt/pozo/@logs
+
+/mnt/pozo/@logs:
+
+root@quirquincho:~# lsattr -Rl /mnt/pozo
+/mnt/pozo/@pozo-discos       Compression_Requested
+
+/mnt/pozo/@pozo-discos:
+
+/mnt/pozo/@pozo-baul         ---
+
+/mnt/pozo/@pozo-baul:
+
+/mnt/pozo/@downloads         ---
+
+/mnt/pozo/@downloads:
+
+/mnt/pozo/@playables         ---
+
+/mnt/pozo/@playables:
+
+/mnt/pozo/@temp              No_COW
+
+/mnt/pozo/@temp:
+
+/mnt/pozo/@logs              No_COW
+
+/mnt/pozo/@logs:
+
+root@quirquincho:~#
+```
 
 ### root@quirquincho:~# mount |grep pozo
 ```
@@ -17,6 +84,24 @@ LABEL=pozo /mnt/pozo btrfs noatime,lazytime,noacl,autodefrag,commit=120 0 0
 ### creación
 ```
 mkfs.btrfs -L pozo /dev/sda
+```
+
+
+
+### subvolumes with different mount options
+### from obsolete: https://archive.kernel.org/oldwiki/btrfs.wiki.kernel.org/index.php/FAQ.html#Can_I_mount_subvolumes_with_different_mount_options.3F
+### https://btrfs.readthedocs.io/en/latest/btrfs-man5.html](https://btrfs.readthedocs.io/en/latest/Subvolumes.html#mount-options
+
+```
+Can I mount subvolumes with different mount options?
+The generic mount options can be different for each subvolume, see the list below. Btrfs-specific mount options cannot be specified per-subvolume, but this will be possible in the future (a work in progress).
+
+Generic mount options: nodev, nosuid, ro, rw, and probably more. See section FILESYSTEM INDEPENDENT MOUNT OPTIONS of man page mount(8).
+
+Btrfs-specific mount options:
+Yes for btrfs-specific options:  subvol or subvolid
+Planned:  compress/compress-force, autodefrag, inode_cache, ...
+No:  the options affecting the whole filesystem like space_cache, discard, ssd, ...
 ```
 
 ### smartctl con Read errors
