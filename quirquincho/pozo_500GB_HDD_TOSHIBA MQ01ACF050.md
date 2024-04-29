@@ -104,6 +104,246 @@ Planned:  compress/compress-force, autodefrag, inode_cache, ...
 No:  the options affecting the whole filesystem like space_cache, discard, ssd, ...
 ```
 
+
+### smartctl con Read errors CORREGIDOS
+#### ...usando badblocks
+```
+root@quirquincho:~# smartctl -A /dev/sda
+smartctl 7.2 2020-12-30 r5155 [x86_64-linux-6.2.16-4-bpo11-pve] (local build)
+Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF READ SMART DATA SECTION ===
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000b   100   100   050    Pre-fail  Always       -       0
+  2 Throughput_Performance  0x0005   100   100   050    Pre-fail  Offline      -       0
+  3 Spin_Up_Time            0x0027   100   100   001    Pre-fail  Always       -       2803
+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       1480
+  5 Reallocated_Sector_Ct   0x0033   100   100   050    Pre-fail  Always       -       120
+  7 Seek_Error_Rate         0x000b   100   100   050    Pre-fail  Always       -       0
+  8 Seek_Time_Performance   0x0005   100   100   050    Pre-fail  Offline      -       0
+  9 Power_On_Hours          0x0032   069   069   000    Old_age   Always       -       12694
+ 10 Spin_Retry_Count        0x0033   129   100   030    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       1475
+191 G-Sense_Error_Rate      0x0032   100   100   000    Old_age   Always       -       21
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       77
+193 Load_Cycle_Count        0x0032   075   075   000    Old_age   Always       -       256418
+194 Temperature_Celsius     0x0022   100   100   000    Old_age   Always       -       44 (Min/Max 11/61)
+196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -       11
+197 Current_Pending_Sector  0x0032   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0030   100   100   000    Old_age   Offline      -       28
+199 UDMA_CRC_Error_Count    0x0032   200   200   000    Old_age   Always       -       1
+220 Disk_Shift              0x0002   100   100   000    Old_age   Always       -       0
+222 Loaded_Hours            0x0032   074   074   000    Old_age   Always       -       10479
+223 Load_Retry_Count        0x0032   100   100   000    Old_age   Always       -       0
+224 Load_Friction           0x0022   100   100   000    Old_age   Always       -       0
+226 Load-in_Time            0x0026   100   100   000    Old_age   Always       -       251
+240 Head_Flying_Hours       0x0001   100   100   001    Pre-fail  Offline      -       0
+
+root@quirquincho:~# smartctl -a /dev/sda
+smartctl 7.2 2020-12-30 r5155 [x86_64-linux-6.2.16-4-bpo11-pve] (local build)
+Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF INFORMATION SECTION ===
+Device Model:     TOSHIBA MQ01ACF050
+Serial Number:    35CEC4JQT
+LU WWN Device Id: 5 000039 6239848e5
+Firmware Version: AV001U
+User Capacity:    500,107,862,016 bytes [500 GB]
+Sector Sizes:     512 bytes logical, 4096 bytes physical
+Rotation Rate:    7200 rpm
+Form Factor:      2.5 inches
+Device is:        Not in smartctl database [for details use: -P showall]
+ATA Version is:   ATA8-ACS (minor revision not indicated)
+SATA Version is:  SATA 3.0, 3.0 Gb/s (current: 3.0 Gb/s)
+Local Time is:    Mon Apr 22 22:21:07 2024 -03
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+
+General SMART Values:
+Offline data collection status:  (0x00) Offline data collection activity
+                                        was never started.
+                                        Auto Offline Data Collection: Disabled.
+Self-test execution status:      ( 112) The previous self-test completed having
+                                        the read element of the test failed.
+Total time to complete Offline
+data collection:                (  120) seconds.
+Offline data collection
+capabilities:                    (0x5b) SMART execute Offline immediate.
+                                        Auto Offline data collection on/off support.
+                                        Suspend Offline collection upon new
+                                        command.
+                                        Offline surface scan supported.
+                                        Self-test supported.
+                                        No Conveyance Self-test supported.
+                                        Selective Self-test supported.
+SMART capabilities:            (0x0003) Saves SMART data before entering
+                                        power-saving mode.
+                                        Supports SMART auto save timer.
+Error logging capability:        (0x01) Error logging supported.
+                                        General Purpose Logging supported.
+Short self-test routine
+recommended polling time:        (   2) minutes.
+Extended self-test routine
+recommended polling time:        ( 103) minutes.
+SCT capabilities:              (0x003d) SCT Status supported.
+                                        SCT Error Recovery Control supported.
+                                        SCT Feature Control supported.
+                                        SCT Data Table supported.
+
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000b   100   100   050    Pre-fail  Always       -       0
+  2 Throughput_Performance  0x0005   100   100   050    Pre-fail  Offline      -       0
+  3 Spin_Up_Time            0x0027   100   100   001    Pre-fail  Always       -       2803
+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       1480
+  5 Reallocated_Sector_Ct   0x0033   100   100   050    Pre-fail  Always       -       120
+  7 Seek_Error_Rate         0x000b   100   100   050    Pre-fail  Always       -       0
+  8 Seek_Time_Performance   0x0005   100   100   050    Pre-fail  Offline      -       0
+  9 Power_On_Hours          0x0032   069   069   000    Old_age   Always       -       12694
+ 10 Spin_Retry_Count        0x0033   129   100   030    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       1475
+191 G-Sense_Error_Rate      0x0032   100   100   000    Old_age   Always       -       21
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       77
+193 Load_Cycle_Count        0x0032   075   075   000    Old_age   Always       -       256419
+194 Temperature_Celsius     0x0022   100   100   000    Old_age   Always       -       45 (Min/Max 11/61)
+196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -       11
+197 Current_Pending_Sector  0x0032   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0030   100   100   000    Old_age   Offline      -       28
+199 UDMA_CRC_Error_Count    0x0032   200   200   000    Old_age   Always       -       1
+220 Disk_Shift              0x0002   100   100   000    Old_age   Always       -       0
+222 Loaded_Hours            0x0032   074   074   000    Old_age   Always       -       10479
+223 Load_Retry_Count        0x0032   100   100   000    Old_age   Always       -       0
+224 Load_Friction           0x0022   100   100   000    Old_age   Always       -       0
+226 Load-in_Time            0x0026   100   100   000    Old_age   Always       -       251
+240 Head_Flying_Hours       0x0001   100   100   001    Pre-fail  Offline      -       0
+
+SMART Error Log Version: 1
+ATA Error Count: 7723 (device log contains only the most recent five errors)
+        CR = Command Register [HEX]
+        FR = Features Register [HEX]
+        SC = Sector Count Register [HEX]
+        SN = Sector Number Register [HEX]
+        CL = Cylinder Low Register [HEX]
+        CH = Cylinder High Register [HEX]
+        DH = Device/Head Register [HEX]
+        DC = Device Command Register [HEX]
+        ER = Error register [HEX]
+        ST = Status register [HEX]
+Powered_Up_Time is measured from power on, and printed as
+DDd+hh:mm:SS.sss where DD=days, hh=hours, mm=minutes,
+SS=sec, and sss=millisec. It "wraps" after 49.710 days.
+
+Error 7723 occurred at disk power-on lifetime: 12670 hours (527 days + 22 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 41 10 c0 12 00 40  Error: UNC at LBA = 0x000012c0 = 4800
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 08 10 c0 12 00 40 00      21:11:56.211  READ FPDMA QUEUED
+  ef 10 02 00 00 00 a0 00      21:11:56.207  SET FEATURES [Enable SATA feature]
+  27 00 00 00 00 00 e0 00      21:11:56.206  READ NATIVE MAX ADDRESS EXT [OBS-ACS-3]
+  ec 00 00 00 00 00 a0 00      21:11:56.206  IDENTIFY DEVICE
+  ef 03 45 00 00 00 a0 00      21:11:56.205  SET FEATURES [Set transfer mode]
+
+Error 7722 occurred at disk power-on lifetime: 12670 hours (527 days + 22 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 41 b8 c0 12 00 40  Error: UNC at LBA = 0x000012c0 = 4800
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 08 b8 c0 12 00 40 00      21:11:53.467  READ FPDMA QUEUED
+  ef 10 02 00 00 00 a0 00      21:11:53.463  SET FEATURES [Enable SATA feature]
+  27 00 00 00 00 00 e0 00      21:11:53.462  READ NATIVE MAX ADDRESS EXT [OBS-ACS-3]
+  ec 00 00 00 00 00 a0 00      21:11:53.461  IDENTIFY DEVICE
+  ef 03 45 00 00 00 a0 00      21:11:53.461  SET FEATURES [Set transfer mode]
+
+Error 7721 occurred at disk power-on lifetime: 12670 hours (527 days + 22 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 41 40 c0 12 00 40  Error: UNC at LBA = 0x000012c0 = 4800
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 08 40 c0 12 00 40 00      21:11:50.731  READ FPDMA QUEUED
+  ef 10 02 00 00 00 a0 00      21:11:50.727  SET FEATURES [Enable SATA feature]
+  27 00 00 00 00 00 e0 00      21:11:50.726  READ NATIVE MAX ADDRESS EXT [OBS-ACS-3]
+  ec 00 00 00 00 00 a0 00      21:11:50.725  IDENTIFY DEVICE
+  ef 03 45 00 00 00 a0 00      21:11:50.725  SET FEATURES [Set transfer mode]
+
+Error 7720 occurred at disk power-on lifetime: 12670 hours (527 days + 22 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 41 60 c0 12 00 40  Error: UNC at LBA = 0x000012c0 = 4800
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 08 60 c0 12 00 40 00      21:11:47.946  READ FPDMA QUEUED
+  ef 10 02 00 00 00 a0 00      21:11:47.944  SET FEATURES [Enable SATA feature]
+  27 00 00 00 00 00 e0 00      21:11:47.943  READ NATIVE MAX ADDRESS EXT [OBS-ACS-3]
+  ec 00 00 00 00 00 a0 00      21:11:47.943  IDENTIFY DEVICE
+  ef 03 45 00 00 00 a0 00      21:11:47.942  SET FEATURES [Set transfer mode]
+
+Error 7719 occurred at disk power-on lifetime: 12670 hours (527 days + 22 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 41 60 c0 12 00 40  Error: UNC at LBA = 0x000012c0 = 4800
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  60 08 60 c0 12 00 40 00      21:11:45.141  READ FPDMA QUEUED
+  60 08 58 b8 12 00 40 00      21:11:45.125  READ FPDMA QUEUED
+  60 08 50 b0 12 00 40 00      21:11:45.116  READ FPDMA QUEUED
+  60 08 48 a8 12 00 40 00      21:11:44.641  READ FPDMA QUEUED
+  60 08 08 a0 12 00 40 00      21:11:43.771  READ FPDMA QUEUED
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed: read failure       00%     12666         75864
+# 2  Extended offline    Completed: read failure       00%     12651         75864
+# 3  Short offline       Interrupted (host reset)      30%         2         -
+# 4  Short offline       Completed without error       00%         1         -
+# 5  Short offline       Completed without error       00%         0         -
+
+SMART Selective self-test log data structure revision number 1
+ SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
+    1        0        0  Not_testing
+    2        0        0  Not_testing
+    3        0        0  Not_testing
+    4        0        0  Not_testing
+    5        0        0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.
+```
+
 ### smartctl con Read errors
 #### después se usó badblocks para corregir
 ```
