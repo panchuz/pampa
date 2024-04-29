@@ -12,7 +12,7 @@ compress_alg="zstd:6"
 
 # verificación de la cantidad de argumentos
 if [ $# -ne 2 ]; then
-	echo "Uso: ${BASH_SOURCE[0]} device_abs_route name"
+	echo "Uso: ${BASH_SOURCE[0]} device_abs_route label"
 	return 1
 fi
 
@@ -31,14 +31,14 @@ EOF
 
 mount "$mountpoint"
 
-btrfs subvolume create /mnt/pozo/{@pozo-pve @playables @downloads @logs @temp}
+btrfs subv create "$mountpoint"{@"$label"-pve @playables @downloads @logs @temp}
 
-btrfs prop set /mnt/pozo/@pozo-pve/images compression zstd
-btrfs prop set /mnt/pozo/@pozo-pve/template compression no
-
-btrfs prop set /mnt/pozo/@pozo-pve/dump compression no
-btrfs prop set /mnt/pozo/@pozo-pve/snippets compression zstd
-btrfs prop set /mnt/pozo/@pozo-pve/palyable compression no
-btrfs prop set /mnt/pozo/@pozo-pve/downloads compression no
-chattr +C /mnt/pozo/@logs
-chattr +C /mnt/pozo/@temp
+btrfs prop set "$mountpoint"@"$label"-pve/images compression zstd
+btrfs prop set "$mountpoint"@"$label"-pve/template compression no
+### ...iso/ & .../cache ????????????????????????????????????????????????????????
+btrfs prop set "$mountpoint"@"$label"-pve/dump compression no
+btrfs prop set "$mountpoint"@"$label"-pve/snippets compression zstd
+btrfs prop set "$mountpoint"@"$label"-pve/palyable compression no
+btrfs prop set "$mountpoint"@"$label"-pve/downloads compression no
+chattr +C "$mountpoint"@logs
+chattr +C "$mountpoint"@temp
