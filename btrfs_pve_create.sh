@@ -47,16 +47,22 @@ btrfs subv create "$mountpoint"/@temp
 pvesm add btrfs "$label" --path "$pve_storage_path" --is_mountpoint "$mountpoint"
 
 # PVE Storage compression discriminated
+# Note "compression no" clears both "+c" and "+m" extended attributes
 btrfs prop set "$pve_storage_path"/images compression zstd
 btrfs prop set "$pve_storage_path"/template compression no
-#btrfs prop set "$pve_storage_path"/template/iso compression no
-#btrfs prop set "$pve_storage_path"/template/cache compression no
+    btrfs prop set "$pve_storage_path"/template/iso compression no
+    btrfs prop set "$pve_storage_path"/template/cache compression no
+chattr -R +m "$pve_storage_path"/template
 btrfs prop set "$pve_storage_path"/dump compression no
+chattr -R +m "$pve_storage_path"/dump
 btrfs prop set "$pve_storage_path"/snippets compression zstd
+
 
 # No compressión
 btrfs prop set "$mountpoint"/@palyable compression no
+chattr -R +m "$pve_storage_path"/palyable
 btrfs prop set "$mountpoint"/@downloads compression no
+chattr -R +m "$pve_storage_path"/downloads
 
 # No Data COW (meanning NO compression and NO datasum)
 chattr +C "$mountpoint"/@logs
