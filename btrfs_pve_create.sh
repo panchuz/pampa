@@ -2,8 +2,9 @@
 dev="$1" # device route
 label="$2" # label for the fs
 
-mountpoint="/mnt/$label"
 compress_alg="zstd:6"
+mountpoint="/mnt/$label"
+pve_storage_path="$pve_storage_path"
 
 #######################################################################
 #  bt panchuz                                                         #
@@ -31,14 +32,32 @@ EOF
 
 mount "$mountpoint"
 
-btrfs subv create "$mountpoint"{@"$label"-pve @playables @downloads @logs @temp}
+# Subvolume creation
+btrfs subv create "$mountpoint"/@"$label"-pve
+btrfs subv create "$mountpoint"/@playables
+btrfs subv create "$mountpoint"/@downloads
+btrfs subv create "$mountpoint"/@logs
+btrfs subv create "$mountpoint"/@temp
 
-btrfs prop set "$mountpoint"@"$label"-pve/images compression zstd
-btrfs prop set "$mountpoint"@"$label"-pve/template compression no
-### ...iso/ & .../cache ????????????????????????????????????????????????????????
-btrfs prop set "$mountpoint"@"$label"-pve/dump compression no
-btrfs prop set "$mountpoint"@"$label"-pve/snippets compression zstd
-btrfs prop set "$mountpoint"@"$label"-pve/palyable compression no
-btrfs prop set "$mountpoint"@"$label"-pve/downloads compression no
-chattr +C "$mountpoint"@logs
-chattr +C "$mountpoint"@temp
+# pvesm add dir <STORAGE_ID> --path <PATH>
+#btrfs: data2
+#        path /mnt/data2/pve-storage
+#        content rootdir,images
+#        is_mountpoint /mnt/data2
+pvesm add btrfs "$label" --path "$pve_storage_path" --is_mountpoint "$mountpoint"
+
+# PVE Storage compression discriminated
+btrfs prop set "$pve_storage_path"/images compression zstd
+btrfs prop set "$pve_storage_path"/template compression no
+#btrfs prop set "$pve_storage_path"/template/iso compression no
+#btrfs prop set "$pve_storage_path"/template/cache compression no
+btrfs prop set "$pve_storage_path"/dump compression no
+btrfs prop set "$pve_storage_path"/snippets compression zstd
+
+# No compressión
+btrfs prop set "$mountpoint"/@palyable compression no
+btrfs prop set "$mountpoint"/@downloads compression no
+
+# No Data COW (meanning NO compression and NO datasum)
+chattr +C "$mountpoint"/@logs
+chattr +C "$mountpoint"/@temp
