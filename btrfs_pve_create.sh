@@ -51,7 +51,8 @@ btrfs subv create "$mountpoint"/@temp
 pvesm add btrfs "$label" \
 	--path "$pve_storage_path" \
  	--content iso,backup,images,vztmpl,rootdir,snippets \
-  	--is_mountpoint "$mountpoint" \
+  	--format subvol \
+	--is_mountpoint "$mountpoint" \
 	|| exit 1
  
 # PVE Storage compression tuning
