@@ -4,7 +4,11 @@ label="$2" # label for the fs
 
 compress_alg="zstd:6"
 mountpoint="/mnt/$label"
-pve_storage_path="$pve_storage_path"
+#pve_storage_path="$mountpoint"/@"$label"-pve
+# No "@" for PVE < 8.0
+# Ref: https://forum.proxmox.com/threads/setting-up-backup-location-error-with-in-file-path.125856/
+pve_storage_path="$mountpoint"/"$label"-pve
+
 
 #######################################################################
 #  by panchuz                                                         #
@@ -33,7 +37,7 @@ EOF
 mount "$mountpoint"
 
 # Subvolume creation
-btrfs subv create "$mountpoint"/@"$label"-pve
+btrfs subv create "$pve_storage_path"
 btrfs subv create "$mountpoint"/@playables
 btrfs subv create "$mountpoint"/@downloads
 btrfs subv create "$mountpoint"/@logs
@@ -44,10 +48,15 @@ btrfs subv create "$mountpoint"/@temp
 #        path /mnt/data2/pve-storage
 #        content rootdir,images
 #        is_mountpoint /mnt/data2
-pvesm add btrfs "$label" --path "$pve_storage_path" --is_mountpoint "$mountpoint"
-
-# PVE Storage compression discriminated
-# Note "compression no" clears both "+c" and "+m" extended attributes
+pvesm add btrfs "$label" \
+	--path "$pve_storage_path" \
+ 	--content iso,backup,images,vztmpl,rootdir,snippets \
+  	--is_mountpoint "$mountpoint" \
+	|| exit 1
+ 
+# PVE Storage compression tuning
+# Note "compression no" clears both "+c" and "+m" extended attributesm.
+# For btrfs to NOT try to compress, we need to set "+m" using chattr
 btrfs prop set "$pve_storage_path"/images compression zstd
 btrfs prop set "$pve_storage_path"/template compression no
     btrfs prop set "$pve_storage_path"/template/iso compression no
@@ -59,11 +68,11 @@ btrfs prop set "$pve_storage_path"/snippets compression zstd
 
 
 # No compressión
-btrfs prop set "$mountpoint"/@palyable compression no
-chattr -R +m "$pve_storage_path"/palyable
+btrfs prop set "$mountpoint"/@playables compression no
+chattr -R +m "$mountpoint"/@playables
 btrfs prop set "$mountpoint"/@downloads compression no
-chattr -R +m "$pve_storage_path"/downloads
+chattr -R +m "$mountpoint"/@downloads
 
-# No Data COW (meanning NO compression and NO datasum)
+# No Data COW (meaning NO compression and NO datasum)
 chattr +C "$mountpoint"/@logs
 chattr +C "$mountpoint"/@temp
