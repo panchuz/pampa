@@ -7,7 +7,7 @@ mountpoint="/mnt/$label"
 pve_storage_path="$pve_storage_path"
 
 #######################################################################
-#  bt panchuz                                                         #
+#  by panchuz                                                         #
 #  to crete a btrfs structure for PVE Storage Manager and stuff       #
 #######################################################################
 
@@ -20,14 +20,14 @@ fi
 # carga de biblioteca de funciones generales
 #source <(wget --quiet -O - https://raw.githubusercontent.com/panchuz/linux_setup/main/general.func.sh)
 
-mkfs.btrfs -L "$label" "$dev"
+mkfs.btrfs -L "$label" "$dev" || exit "Filesystem NOT CREATED"
 
 mkdir "$mountpoint"
 
 cat <<-EOF >>/etc/fstab
-    # by panchuz for "$label", partitionless btrfs w/PVE Managed Storage
-    # subvolumes & options: https://docs.google.com/spreadsheets/d/1wo6dBPTnL5k3w7smA_RA9fiwd9cunhLJKzpaU-NM8iw/edit#gid=0
-    LABEL="$label" "$mountpoint" btrfs noatime,lazytime,noacl,autodefrag,compress="$compress_alg",commit=120 0 0
+	# by panchuz for $label, partitionless btrfs w/PVE Managed Storage
+	# subvolumes & options: https://docs.google.com/spreadsheets/d/1wo6dBPTnL5k3w7smA_RA9fiwd9cunhLJKzpaU-NM8iw/edit#gid=0
+	LABEL=$label $mountpoint btrfs noatime,lazytime,noacl,autodefrag,compress="$compress_alg",commit=120 0 0
 EOF
 
 mount "$mountpoint"
