@@ -3,6 +3,22 @@
 # edit /etc/fstab for btrfs
 # noatime,lazytime,compress=zstd:1,commit=120
 
+### Completely remove ceph and config
+# https://forum.proxmox.com/threads/removing-ceph-completely.62818/post-604868
+systemctl stop ceph-mon.target
+systemctl stop ceph-mgr.target
+systemctl stop ceph-mds.target
+systemctl stop ceph-osd.target
+rm -rf /etc/systemd/system/ceph*
+killall -9 ceph-mon ceph-mgr ceph-mds
+rm -rf /var/lib/ceph/mon/  /var/lib/ceph/mgr/  /var/lib/ceph/mds/
+pveceph purge
+apt purge ceph-mon ceph-osd ceph-mgr ceph-mds
+apt purge ceph-base ceph-mgr-modules-core
+rm -rf /etc/ceph/*
+rm -rf /etc/pve/ceph.conf
+rm -rf /etc/pve/priv/ceph.*
+
 ### Reduce SSD wearout section ###
 # Most writes should be logs, rrdcached metrics and the cluster service with its pmxcfs DB
 
