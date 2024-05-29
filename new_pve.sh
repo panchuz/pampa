@@ -1,36 +1,37 @@
 #!/bin/bash
 
-# edit /etc/fstab for btrfs
-# noatime,lazytime,compress=zstd:1,commit=120
+# edit /etc/fstab for btrfs noatime,lazytime,autodefrag,compress=zstd:?,commit=120 0 0
+cp /etc/fstab /etc/fstab.INSTALLED
+sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:6,commit=120 0 0/g' /etc/fstab
 
-### Completely remove ceph and config
-# https://forum.proxmox.com/threads/removing-ceph-completely.62818/post-604868
-systemctl stop ceph-mon.target
-systemctl stop ceph-mgr.target
-systemctl stop ceph-mds.target
-systemctl stop ceph-osd.target
-rm -rf /etc/systemd/system/ceph*
-killall -9 ceph-mon ceph-mgr ceph-mds
-rm -rf /var/lib/ceph/mon/  /var/lib/ceph/mgr/  /var/lib/ceph/mds/
-pveceph purge
-apt purge ceph-mon ceph-osd ceph-mgr ceph-mds
-apt purge ceph-base ceph-mgr-modules-core
-rm -rf /etc/ceph/*
-rm -rf /etc/pve/ceph.conf
-rm -rf /etc/pve/priv/ceph.*
 
-### Reduce SSD wearout section ###
-# Most writes should be logs, rrdcached metrics and the cluster service with its pmxcfs DB
+# Proxmox VE Post Install by tteck
+# --- DON´T UPDATE UPGRADE PLZ ---
+bash -c "$(wget -qLO - https://github.com/tteck/Proxmox/raw/main/misc/post-pve-install.sh)"
 
-# https://www.reddit.com/r/Proxmox/comments/ncg2xo/minimizing_ssd_wear_through_pve_configuration/
-# https://www.reddit.com/r/Proxmox/comments/129dxw7/proxmox_high_disk_writes/
-systemctl disable --now pve-ha-crm.service
-systemctl disable --now pve-ha-lrm.service
-systemctl disable --now pvesr.timer
-systemctl disable --now corosync.service
 
-#systemctl stop pve-cluster.service ?????!!!!!
-# https://github.com/isasmendiagus/pmxcfs-ram
+# disable/delete ceph and pve-enterprise repos
+rm /etc/apt/sources.list.d/ceph.list
+rm /etc/apt/sources.list.d/pve-enterprise.list
+
+# Load general functions 
+source <(wget --quiet -O - https://raw.githubusercontent.com/panchuz/linux_setup/main/general.func.sh)
+
+# Actualización desatendida "confdef/confold"
+# mailx es pedido en /etc/apt/apt.conf.d/50unattended-upgrades para notificar por mail
+# apt-listchanges es indicado en https://wiki.debian.org/UnattendedUpgrades#Automatic_call_via_.2Fetc.2Fapt.2Fapt.conf.d.2F20auto-upgrades
+apt_dist_upgrade_install postfix-pcre unattended-upgrades sudo curl \ 
+	btrfs-compsize iotop htop tmux mc
+	#  folder2ram log2ram ???? maybe next time...
+
+# Update the list of available lxc templates
+pveam update
+
+
+ 
+# -------------------
+
+###### Reduce SSD wearout section start ######
 
 # proxmox logs a lot of stuff. you can reduce ssd wear by using 'folder2ram' to host various directories on tmpfs file systems.
 # /var/log
@@ -43,34 +44,31 @@ systemctl disable --now corosync.service
 # on rrdcached
 # https://forum.proxmox.com/threads/reducing-rrdcached-writes.64473/
 
-### Reduce SSD wearout section end ###
+# NO systemctl disable pve-cluster.service !!!!!
+# here´s an alternative
+# https://github.com/isasmendiagus/pmxcfs-ram
+
+###### Reduce SSD wearout section end ######
+
 
 
 # btrfs HDD for pve-storage, logs, playables, etc
 # logs AWAY btrfs ???????????
 # https://forum.proxmox.com/threads/change-var-log-pveproxy-var-log-pve-locations.110265/
 
-# para evitar “You do not have a valid subscription for this server….”
-# https://dannyda.com/2020/05/17/how-to-remove-you-do-not-have-a-valid-subscription-for-this-server-from-proxmox-virtual-environment-6-1-2-proxmox-ve-6-1-2-pve-6-1-2/
-sed -i.backup -z "s/res === null || res === undefined || \!res || res\n\t\t\t.data.status.toLowerCase() \!== 'active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js \
-	&& systemctl restart pveproxy.service
 
 
-# no subscription updates repo
-# disable/delete Ceph storage repo
-# apt update && apt upgrade
-
-
-## LetsEncrypt certificates using ACME
-
-## 2FA ???
-
-apt install btrfs-compsize iotop htop tmux
-# mc folder2ram log2ram ????
 
 # New users unproot (uid:100000) panchuz (uid:101000) ????
 # enable panchuz ssh access with ed25519 key
 # disable ssh root access
+
+
+
+
+
+## LetsEncrypt certificates using ACME
+## 2FA ???
 
 # Enable messaging system:
 # Gotify? authenticated smtp? traditional?
