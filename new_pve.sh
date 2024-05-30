@@ -1,8 +1,50 @@
-#!/bin/bash
+#!/usr/bin/env bash
+usage () { echo "Usage: ${BASH_SOURCE[0]}\nNo arguments supported"; }
+
+#######################################################################
+#  by panchuz                                                         #
+#  Proxmox post install script for single node (no cluster)           #
+#  on BTRFS root filesystem                                           #
+#######################################################################
+
+# Sanity check
+# ref: if command; then command; else command; fi
+if ! [ $# -eq 0 ]; then { usage; return 1; }; fi
+
 
 # edit /etc/fstab for btrfs noatime,lazytime,autodefrag,compress=zstd:?,commit=120 0 0
 cp /etc/fstab /etc/fstab.INSTALLED
-sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:6,commit=120 0 0/g' /etc/fstab
+
+# Get the root filesystem device path
+rootfs_dev_path=$(df / | tail -1 | awk '{print $1}')
+
+# Get the device name without partition number
+device_name=$(lsblk -no PKNAME $rootfs_dev_path)
+
+# Check if the device is rotational
+rotational_file="/sys/block/$device_name/queue/rotational"
+
+if [[ -f $rotational_file ]]; then
+    is_rotational=$(cat $rotational_file)
+    if [[ $is_rotational -eq 1 ]]; then
+        echo "The root file system is on a rotational device => compress=zstd:6"
+		sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:6,commit=120 0 0/g' /etc/fstab
+    else
+        echo "The root file system is not on a rotational device => compress=zstd:1"
+		sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
+    fi
+else
+    echo "Could not determine if the device is rotational => compress=zstd:1"
+	sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
+fi
+
+# swap file creation
+# https://wiki.archlinux.org/title/btrfs#Swap_file
+btrfs subvolume create /@swap
+#mount -o subvol=/@swap "$rootfs_dev_path" /swap
+btrfs filesystem mkswapfile --size 4g --uuid clear /@swap/swapfile
+swapon /@swap/swapfile
+echo "/@swap/swapfile none swap defaults 0 0" >> /etc/fstab
 
 
 # Proxmox VE Post Install by tteck

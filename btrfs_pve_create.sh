@@ -1,37 +1,35 @@
 #!/usr/bin/env bash
-dev="$1" # device route
-label="$2" # label for the fs
+usage () { echo "Usage: ${BASH_SOURCE[0]} device_abs_route fs_label"; }
+
+dev_route="$1" # device absolute route eg: /dev_route/sdx
+fs_label="$2" # fs_label for the fs
 
 compress_alg="zstd:6"
-mountpoint="/mnt/$label"
-#pve_storage_path="$mountpoint"/@"$label"-pve
-# No "@" for PVE < 8.0
-# Ref: https://forum.proxmox.com/threads/setting-up-backup-location-error-with-in-file-path.125856/
-pve_storage_path="$mountpoint"/"$label"-pve
+mountpoint="/mnt/$fs_label"
+pve_storage_path="$mountpoint"/@"$fs_label"-pve
+# for PVE < 8, NO "@". Ref: https://forum.proxmox.com/threads/setting-up-backup-location-error-with-in-file-path.125856/
 
 
 #######################################################################
 #  by panchuz                                                         #
-#  to crete a btrfs structure for PVE Storage Manager and stuff       #
+#  to crete a btrfs structure for PVE Storage Manager and other stuff #
 #######################################################################
 
-# verificación de la cantidad de argumentos
-if [ $# -ne 2 ]; then
-	echo "Uso: ${BASH_SOURCE[0]} device_abs_route label"
-	return 1
-fi
+# Sanity check
+# ref: if command; then command; else command; fi
+if ! [ $# -eq 2 ]; then { usage; return 1; }; fi
 
 # carga de biblioteca de funciones generales
 #source <(wget --quiet -O - https://raw.githubusercontent.com/panchuz/linux_setup/main/general.func.sh)
 
-mkfs.btrfs -L "$label" "$dev" || exit 1
+mkfs.btrfs -L "$fs_label" "$dev_route" || return 1
 
 mkdir "$mountpoint"
 
 cat <<-EOF >>/etc/fstab
-	# by panchuz for $label, partitionless btrfs w/PVE Managed Storage
+	# by panchuz for $fs_label, partitionless btrfs w/PVE Managed Storage
 	# subvolumes & options: https://docs.google.com/spreadsheets/d/1wo6dBPTnL5k3w7smA_RA9fiwd9cunhLJKzpaU-NM8iw/edit#gid=0
-	LABEL=$label $mountpoint btrfs noatime,lazytime,noacl,autodefrag,compress=$compress_alg,commit=120 0 0
+	LABEL=$fs_label $mountpoint btrfs noatime,lazytime,autodefrag,compress=$compress_alg,commit=120 0 0
 EOF
 
 mount "$mountpoint"
@@ -43,17 +41,12 @@ btrfs subv create "$mountpoint"/@downloads
 btrfs subv create "$mountpoint"/@logs
 btrfs subv create "$mountpoint"/@temp
 
-# pvesm add dir <STORAGE_ID> --path <PATH>
-#btrfs: data2
-#        path /mnt/data2/pve-storage
-#        content rootdir,images
-#        is_mountpoint /mnt/data2
-pvesm add btrfs "$label" \
+pvesm add btrfs "$fs_label" \
 	--path "$pve_storage_path" \
  	--content iso,backup,images,vztmpl,rootdir,snippets \
   	--format subvol \
 	--is_mountpoint "$mountpoint" \
-	|| exit 1
+	|| return 1
  
 # PVE Storage compression tuning
 # Note "compression no" clears both "+c" and "+m" extended attributesm.
