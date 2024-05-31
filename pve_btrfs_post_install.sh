@@ -74,17 +74,19 @@ start_routines() {
 	if [[ -f $rotational_file ]]; then
 		is_rotational=$(cat $rotational_file)
 		if [[ $is_rotational -eq 1 ]]; then
-			msg_info "The root file system is on a rotational device => compress=zstd:6"
+			msg_info "root fs is on a rotational device. Setting strong compression."
 			sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:6,commit=120 0 0/g' /etc/fstab
 		else
-			msg_info "The root file system is not on a rotational device => compress=zstd:1"
+			msg_info "root fs is not on a rotational device. Setting light compression."
 			sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
 		fi
 	else
-		echo "Could not determine if the device is rotational => compress=zstd:1"
+		msg_error "Could not determine if root fs device is rotational. Setting light compression."
 		sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
 	fi
-	msg_error "fstab modified for root btrfs best performace"
+	mount --options remount /
+	systemctl daemon-reload
+	msg_ok "fstab modified for root btrfs best performace"
 
 
 	msg_info "Creating swap file"
@@ -143,14 +145,14 @@ start_routines() {
 	# Actualización desatendida "confdef/confold"
 	# mailx es pedido en /etc/apt/apt.conf.d/50unattended-upgrades para notificar por mail
 	# apt-listchanges es indicado en https://wiki.debian.org/UnattendedUpgrades#Automatic_call_via_.2Fetc.2Fapt.2Fapt.conf.d.2F20auto-upgrades
-	apt_dist_upgrade_install postfix-pcre unattended-upgrades sudo curl \ 
-		btrfs-compsize iotop htop tmux mc
+	apt_dist_upgrade_install postfix-pcre unattended-upgrades sudo curl btrfs-compsize iotop htop tmux mc
 		#  folder2ram log2ram ???? maybe next time...
 
 	# Update the list of available lxc templates
 	pveam update
 
 }
+
 
 
 header_info
