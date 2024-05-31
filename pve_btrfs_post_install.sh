@@ -21,9 +21,10 @@ header_info() {
  / ____/| |/ / /___   / ____/ /_/ (__  ) /_   _/ // / / (__  ) /_/ /_/ / / /
 /_/     |___/_____/  /_/    \____/____/\__/  /___/_/ /_/____/\__/\__,_/_/_/
 
-for btrfs rootfs
+for btrfs root filesystem
 by panchuz
 mostly taken from https://github.com/tteck/Proxmox
+
 EOF
 }
 
@@ -57,7 +58,7 @@ msg_error() {
 start_routines() {
 	header_info
 
-	msg_info "Modifing /etc/fstab for btrfs"
+	msg_info "Modifing /etc/fstab for root btrfs best performace"
 	# edit /etc/fstab for btrfs noatime,lazytime,autodefrag,compress=zstd:?,commit=120 0 0
 	cp /etc/fstab /etc/fstab.INSTALLED
 
@@ -73,32 +74,32 @@ start_routines() {
 	if [[ -f $rotational_file ]]; then
 		is_rotational=$(cat $rotational_file)
 		if [[ $is_rotational -eq 1 ]]; then
-			echo "The root file system is on a rotational device => compress=zstd:6"
+			msg_info "The root file system is on a rotational device => compress=zstd:6"
 			sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:6,commit=120 0 0/g' /etc/fstab
 		else
-			echo "The root file system is not on a rotational device => compress=zstd:1"
+			msg_info "The root file system is not on a rotational device => compress=zstd:1"
 			sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
 		fi
 	else
 		echo "Could not determine if the device is rotational => compress=zstd:1"
 		sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
 	fi
-	msg_ok "fstab modified"
+	msg_error "fstab modified for root btrfs best performace"
 
 
 	msg_info "Creating swap file"
 	# https://wiki.archlinux.org/title/btrfs#Swap_file
-	btrfs subvolume create /@swap
+	btrfs subvolume create /@swap  &>/dev/null
 	#mount -o subvol=/@swap "$rootfs_dev_path" /swap
-	btrfs filesystem mkswapfile --size 4g --uuid clear /@swap/swapfile
+	btrfs filesystem mkswapfile --size 4g --uuid clear /@swap/swapfile  &>/dev/null
 	swapon /@swap/swapfile
 	echo "/@swap/swapfile none swap defaults 0 0" >> /etc/fstab
 	msg_ok "Swap file created"
 
-	## Begining of tteck section
+
+	##### Begining of tteck section #####
 	# shamelesly copied form https://github.com/tteck/Proxmox/blob/main/misc/post-pve-install.sh
-	# just eliminated the choices... sounded pretty obvious to me
-	# and removing ceph and pve-enterprise repos
+	# just eliminated the choices... and removed ceph and pve-enterprise repos
 
 	msg_info "Correcting Proxmox VE Sources"
 	cat <<-EOF >/etc/apt/sources.list
@@ -133,10 +134,11 @@ start_routines() {
     systemctl disable -q --now corosync
     msg_ok "Disabled high availability"
 
-	## End of tteck section
+	##### End of tteck section #####
 	
+
 	# Load general functions 
-	source <(wget --quiet -O - https://raw.githubusercontent.com/panchuz/linux_setup/main/general.func.sh)
+	source <(wget --quiet -O - http://github.com/panchuz/setup_linux/raw/$GITHUB_BRANCH/general.func.sh)
 
 	# Actualización desatendida "confdef/confold"
 	# mailx es pedido en /etc/apt/apt.conf.d/50unattended-upgrades para notificar por mail
