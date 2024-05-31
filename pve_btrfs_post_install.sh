@@ -84,8 +84,8 @@ start_routines() {
 		msg_error "Could not determine if root fs device is rotational. Setting light compression."
 		sed -i 's/btrfs defaults 0 1/btrfs noatime,lazytime,autodefrag,compress=zstd:1,commit=120 0 0/g' /etc/fstab
 	fi
-	mount --options remount /
 	systemctl daemon-reload
+ 	mount --options remount /
 	msg_ok "fstab modified for root btrfs best performace"
 
 
