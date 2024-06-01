@@ -98,7 +98,25 @@ start_routines() {
 	echo "/@swap/swapfile none swap defaults 0 0" >> /etc/fstab
 	msg_ok "Swap file created"
 
+	msg_info "Tunning local-btrfs Storage"
+	local pve_storage_id="local-btrfs"
+ 	local pve_storage_path="/var/lib/pve/$pve_storage_id"
+ 	# next line is needed to add "snippets" content type
+  	pvesm set "$pve_storage_id" --content iso,backup,images,vztmpl,rootdir,snippets
 
+ 	# PVE Storage compression tuning
+	# Note "compression no" clears both "+c" and "+m" extended attributesm.
+	# For btrfs to NOT try to compress, we need to set "+m" using chattr
+	btrfs prop set "$pve_storage_path"/images compression zstd
+	btrfs prop set "$pve_storage_path"/template compression no
+	    btrfs prop set "$pve_storage_path"/template/iso compression no
+	    btrfs prop set "$pve_storage_path"/template/cache compression no
+	chattr -R +m "$pve_storage_path"/template
+	btrfs prop set "$pve_storage_path"/dump compression no
+	chattr -R +m "$pve_storage_path"/dump
+	btrfs prop set "$pve_storage_path"/snippets compression zstd
+	msg_ok "Tunned local-btrfs Storage"
+ 
 	##### Begining of tteck section #####
 	# shamelesly copied form https://github.com/tteck/Proxmox/blob/main/misc/post-pve-install.sh
 	# just eliminated the choices... and removed ceph and pve-enterprise repos
@@ -116,7 +134,7 @@ start_routines() {
 	rm /etc/apt/sources.list.d/ceph.list
 	rm /etc/apt/sources.list.d/pve-enterprise.list
 
-    cat <<-EOF >/etc/apt/sources.list.d/pve-install-repo.list
+	cat <<-EOF >/etc/apt/sources.list.d/pve-install-repo.list
 		deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription
 	EOF
 
@@ -126,15 +144,15 @@ start_routines() {
 	msg_ok "Corrected Proxmox VE Sources"
 
 	msg_info "Disabling subscription nag"
-    echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/.*data\.status.*{/{s/\!//;s/active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" >/etc/apt/apt.conf.d/no-nag-script
-      apt --reinstall install proxmox-widget-toolkit &>/dev/null
-    msg_ok "Disabled subscription nag (Delete browser cache)"
+	echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i '/.*data\.status.*{/{s/\!//;s/active/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" >/etc/apt/apt.conf.d/no-nag-script
+	apt --reinstall install proxmox-widget-toolkit &>/dev/null
+	msg_ok "Disabled subscription nag (Delete browser cache)"
 
 	msg_info "Disabling high availability"
-    systemctl disable -q --now pve-ha-lrm
-    systemctl disable -q --now pve-ha-crm
-    systemctl disable -q --now corosync
-    msg_ok "Disabled high availability"
+	systemctl disable -q --now pve-ha-lrm
+	systemctl disable -q --now pve-ha-crm
+	systemctl disable -q --now corosync
+	msg_ok "Disabled high availability"
 
 	##### End of tteck section #####
 	
@@ -150,7 +168,6 @@ start_routines() {
 
 	# Update the list of available lxc templates
 	pveam update
-
 }
 
 
@@ -158,11 +175,11 @@ start_routines() {
 header_info
 
 if ! pveversion | grep -Eq "pve-manager/8.[0-2]"; then
-  msg_error "This version of Proxmox Virtual Environment is not supported"
-  echo -e "Requires Proxmox Virtual Environment Version 8.0 or later."
-  echo -e "Exiting..."
-  sleep 2
-  exit
+	msg_error "This version of Proxmox Virtual Environment is not supported"
+	echo -e "Requires Proxmox Virtual Environment Version 8.0 or later."
+	echo -e "Exiting..."
+	sleep 2
+	exit
 fi
 
 start_routines
