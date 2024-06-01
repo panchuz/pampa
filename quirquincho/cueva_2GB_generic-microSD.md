@@ -1,12 +1,23 @@
 
+#### added cueva to PVE managed storage system
+```
+pvesm add dir cueva --path /mnt/cueva --content iso,backup,vztmpl
+root@quirquincho:~# cat /etc/pve/stora*
+dir: local
+        disable
+        path /var/lib/vz
+        content iso,vztmpl,backup
+
+btrfs: local-btrfs
+        path /var/lib/pve/local-btrfs
+        content rootdir,iso,backup,images,snippets,vztmpl
+
+dir: cueva
+        path /mnt/cueva
+        content backup,vztmpl,iso
+```
+
 ### Ref: https://wiki.archlinux.org/title/F2FS
-
-### excepciones a la compresión
-```
-chattr -R +m /mnt/cueva/dump
-chattr -R +m /mnt/cueva/template
-```
-
 #### root@quirquincho:~# lsattr -R /mnt/cueva
 ```
 ------------------N--- /mnt/cueva/cueva_creacion.txt
@@ -54,12 +65,17 @@ chattr -R +m /mnt/cueva/template
 /mnt/cueva/snippets:
 ```
 
+### excepciones a la compresión
+```
+chattr -R +m /mnt/cueva/dump
+chattr -R +m /mnt/cueva/template
+```
+
 ### root@quirquincho:~# cat /etc/fstab
 ```
 # cueva microSD 2GB genérica
 # https://wiki.archlinux.org/title/F2FS#Recommended_mount_options
-#UUID=4ee5f354-3cad-4fdf-8da3-842b457aa64e /mnt/cueva f2fs compress_algorithm=zstd:6,compress_chksum,atgc,gc_merge,lazytime 0 2
-UUID=4ee5f354-3cad-4fdf-8da3-842b457aa64e /mnt/cueva f2fs noatime,lazytime,noacl,atgc,gc_merge,compress_algorithm=zstd:6,compress_chksum,compress_extension=log 0 2
+UUID=4ee5f354-3cad-4fdf-8da3-842b457aa64e /mnt/cueva f2fs noatime,lazytime,atgc,gc_merge,compress_algorithm=zstd:6,compress_chksum,compress_extension=log 0 0
 ```
 
 ### root@quirquincho:~# mount |grep cueva
