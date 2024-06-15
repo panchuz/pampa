@@ -1,0 +1,107 @@
+
+
+
+
+Patched version of it87 to work with IT8613E chips
+```
+https://github.com/gcoimbra/it87/
+```
+How to add (experimental) sensors support for IT8665E in CentOS
+(instructions may be usefull)
+```
+https://zedt.eu/tech/linux/how-to-add-experimental-sensors-support-for-it8665e-in-centos/
+```
+
+Sad story about a driver
+```
+https://github.com/lm-sensors/lm-sensors/issues/167
+```
+
+How to Control FAN Speed via CPU Temperature
+```
+https://wiki.odroid.com/odroid-h3/application_note/fan_speed_control_with_temp#how_to_control_fan_speed_via_cpu_temperature
+```
+
+After installing lm-sensors
+```
+root@quirquincho:~# sensors-detect
+# sensors-detect version 3.6.0
+# System: Default string Default string [Default string]
+# Kernel: 6.8.4-3-pve x86_64
+# Processor: Intel(R) Pentium(R) Silver N6005 @ 2.00GHz (6/156/0)
+
+This program will help you determine which kernel modules you need
+to load to use lm_sensors most effectively. It is generally safe
+and recommended to accept the default answers to all questions,
+unless you know what you're doing.
+
+Some south bridges, CPUs or memory controllers contain embedded sensors.
+Do you want to scan for them? This is totally safe. (YES/no): 
+Module cpuid loaded successfully.
+Silicon Integrated Systems SIS5595...                       No
+VIA VT82C686 Integrated Sensors...                          No
+VIA VT8231 Integrated Sensors...                            No
+AMD K8 thermal sensors...                                   No
+AMD Family 10h thermal sensors...                           No
+AMD Family 11h thermal sensors...                           No
+AMD Family 12h and 14h thermal sensors...                   No
+AMD Family 15h thermal sensors...                           No
+AMD Family 16h thermal sensors...                           No
+AMD Family 17h thermal sensors...                           No
+AMD Family 15h power sensors...                             No
+AMD Family 16h power sensors...                             No
+Hygon Family 18h thermal sensors...                         No
+Intel digital thermal sensor...                             Success!
+    (driver `coretemp')
+Intel AMB FB-DIMM thermal sensor...                         No
+Intel 5500/5520/X58 thermal sensor...                       No
+VIA C7 thermal sensor...                                    No
+VIA Nano thermal sensor...                                  No
+
+Some Super I/O chips contain embedded sensors. We have to write to
+standard I/O ports to probe them. This is usually safe.
+Do you want to scan for Super I/O sensors? (YES/no): 
+Probing for Super-I/O at 0x2e/0x2f
+Trying family `National Semiconductor/ITE'...               No
+Trying family `SMSC'...                                     No
+Trying family `VIA/Winbond/Nuvoton/Fintek'...               No
+Trying family `ITE'...                                      Yes
+Found `ITE IT8613E Super IO Sensors'                        Success!
+    (address 0xa30, driver `to-be-written')
+Probing for Super-I/O at 0x4e/0x4f
+Trying family `National Semiconductor/ITE'...               No
+Trying family `SMSC'...                                     No
+Trying family `VIA/Winbond/Nuvoton/Fintek'...               No
+Trying family `ITE'...                                      No
+
+
+[........................]
+
+
+Now follows a summary of the probes I have just done.
+Just press ENTER to continue: 
+
+Driver `coretemp':
+  * Chip `Intel digital thermal sensor' (confidence: 9)
+
+Driver `to-be-written':
+  * ISA bus, address 0xa30
+    Chip `ITE IT8613E Super IO Sensors' (confidence: 9)
+
+Note: there is no driver for ITE IT8613E Super IO Sensors yet.
+Check https://hwmon.wiki.kernel.org/device_support_status for updates.
+
+To load everything that is needed, add this to /etc/modules:
+#----cut here----
+# Chip drivers
+coretemp
+#----cut here----
+If you have some drivers built into your kernel, the list above will
+contain too many modules. Skip the appropriate ones!
+
+Do you want to add these lines automatically to /etc/modules? (yes/NO)
+
+Unloading cpuid... OK
+
+root@quirquincho:~# 
+```
