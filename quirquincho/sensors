@@ -1,4 +1,9 @@
 
+Solution to make IT8613E appear in sensors (apparently not in sensors-detect)
+source: https://forums.servethehome.com/index.php?threads/cwwk-topton-nxxx-quad-nic-router.39685/post-421363
+```
+https://github.com/shauno8/it87
+```
 
 
 
